@@ -1,0 +1,22 @@
+{
+  "name": "@wdr/monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WTH Drive Rentals — microservice monorepo",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "dev:iam": "npm run dev -w services/iam-service",
+    "dev:fleet": "npm run dev -w services/fleet-service",
+    "lint": "eslint . --ext .ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
