@@ -344,3 +344,154 @@ export interface DeviceRegistrationInput {
   deviceType: 'obd2' | 'gps_tracker' | 'telematics_unit' | 'ble_tag';
   firmwareVersion?: string;
 }
+
+// ─── Ledger Types ─────────────────────────────────────────────────
+
+export interface WalletResponse {
+  id: string;
+  userId: string;
+  balanceZar: number;
+  availableBalance: number;
+  holdBalance: number;
+  currency: string;
+  isFrozen: boolean;
+}
+
+export interface TransactionResponse {
+  id: string;
+  walletId: string;
+  transactionType: TransactionType;
+  direction: LedgerDirection;
+  amountZar: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  status: TransactionStatus;
+  referenceType: string | null;
+  referenceId: string | null;
+  description: string | null;
+  gatewayReference: string | null;
+  feeZar: number;
+  createdAt: string;
+  settledAt: string | null;
+}
+
+export interface CommissionResponse {
+  id: string;
+  bookingId: string;
+  grossAmountZar: number;
+  commissionRatePct: number;
+  commissionAmountZar: number;
+  platformFeeZar: number;
+  ownerPayoutZar: number;
+  status: 'calculated' | 'invoice' | 'paid' | 'reversed';
+}
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  vatRate: number;
+}
+
+export interface InvoiceResponse {
+  id: string;
+  invoiceNumber: string;
+  invoiceType: string;
+  lineItems: InvoiceLineItem[];
+  subtotalZar: number;
+  vatZar: number;
+  totalZar: number;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'credited';
+  dueDate: string | null;
+  pdfUrl: string | null;
+  createdAt: string;
+}
+
+export interface CreateTransactionInput {
+  walletId: string;
+  transactionType: TransactionType;
+  direction: LedgerDirection;
+  amountZar: number;
+  referenceType?: string;
+  referenceId?: string;
+  description?: string;
+  gatewayReference?: string;
+  feeZar?: number;
+}
+
+export interface BatchPayoutInput {
+  payoutDate: string;
+  maxItems?: number;
+}
+
+// ─── Subscription Types ───────────────────────────────────────────
+
+export interface SubscriptionPlanResponse {
+  id: string;
+  planType: SubscriptionPlan;
+  name: string;
+  description: string | null;
+  billingPeriod: BillingPeriod;
+  priceZar: number;
+  setupFeeZar: number;
+  includedHours: number | null;
+  includedKm: number | null;
+  excessKmRateZar: number | null;
+  vehicleCategories: string[];
+  maxActiveBookings: number;
+  features: string[];
+  trustPricing: Record<string, number>;
+}
+
+export interface SubscriptionResponse {
+  id: string;
+  planId: string;
+  planName: string;
+  vehicleId: string | null;
+  vehicleName: string | null;
+  status: SubscriptionStatus;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  priceZar: number;
+  trustAdjustedPrice: number;
+  usageCurrentPeriod: { km: number; days: number };
+  autoRenew: boolean;
+  createdAt: string;
+}
+
+export interface CreateSubscriptionInput {
+  planId: string;
+  vehicleId?: string;
+  autoRenew?: boolean;
+  paymentMethodId: string;
+}
+
+export interface BillingCycleResponse {
+  id: string;
+  periodStart: string;
+  periodEnd: string;
+  amountZar: number;
+  status: 'pending' | 'invoiced' | 'paid' | 'failed' | 'refunded';
+  usage: { km: number; excessKm: number; excessCharge: number };
+  invoiceId: string | null;
+}
+
+export interface UsageRecord {
+  subscriptionId: string;
+  vehicleId: string;
+  tripId: string;
+  kmDriven: number;
+  hoursUsed: number;
+  recordedAt: string;
+}
+
+export interface FleetDriver {
+  userId: string;
+  fullName: string;
+  email: string;
+  trustTier: TrustTier;
+  kmLimit: number | null;
+  currentUsageKm: number;
+  isActive: boolean;
+}
