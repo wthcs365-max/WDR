@@ -4,12 +4,14 @@
 // ============================================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["iam", "fleet", "booking", "trust", "ledger", "subs", "telemetry", "events"]
 }
 
 // ─── IAM — Identity & Access Management ─────────────────────────────────────
@@ -209,9 +211,13 @@ model Vehicle {
   model        VehicleModel         @relation(fields: [modelId], references: [id])
   availability VehicleAvailability[]
   documents    VehicleDocument[]
-  device       VehicleDevice?
-  bookings     Booking[]
-  subscriptions Subscription[]
+  device          VehicleDevice?
+  bookings        Booking[]
+  subscriptions   Subscription[]
+  claims          Claim[]
+  telemetryEvents TelemetryEvent[]
+  tripSegments    TripSegment[]
+  geofenceEvents  GeofenceEvent[]
 
   @@schema("fleet")
   @@map("vehicles")
@@ -496,7 +502,7 @@ model WaiverApproval {
   expiryTime      DateTime? @map("expiry_time")
   createdAt       DateTime @default(now()) @map("created_at")
 
-  booking   Booking    @relation(fields: [bookingId], references: [id])
+  booking   Booking?   @relation(fields: [bookingId], references: [id])
   trustScore TrustScore @relation(fields: [trustScoreId], references: [id])
 
   @@schema("trust")
@@ -757,7 +763,7 @@ model GeofenceEvent {
   @@map("geofence_events")
 }
 
-// ─── Events — Domain Event Store ────────────────────────────────────────────
+// ─── Events — Domain Event Store ────────────────────────���───────────────────
 
 model DomainEvent {
   id            String   @id @default(uuid()) @db.Uuid
