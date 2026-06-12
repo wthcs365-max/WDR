@@ -1,0 +1,15 @@
+export const config = {
+  port: parseInt(process.env.PORT || '4006', 10),
+  corsOrigin: process.env.CORS_ORIGIN || '*',
+  harshBrakeThreshold: -3.0,
+  harshAccelThreshold: 2.5,
+  sharpTurnThreshold: 4.0,
+  speedOverLimitThreshold: 20,
+  collisionSpeedDropThreshold: 20,
+  collisionTimeWindowSec: 1.5,
+  fuelTheftDropPct: 15,
+  deviceOfflineMinutes: 5,
+  tripTimeoutHours: 2,
+  batchFlushIntervalMs: 5000,
+  batchMaxSize: 500,
+};
