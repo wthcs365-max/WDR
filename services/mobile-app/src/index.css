@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #0F1316;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Custom styles for mobile preview */
+.mobile-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
