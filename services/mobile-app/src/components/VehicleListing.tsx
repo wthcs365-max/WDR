@@ -5,11 +5,13 @@ import { OwnershipType } from '@wdr/shared-types';
 interface VehicleListingProps {
   onNavigateToDashboard: () => void;
   onNavigateToShield: () => void;
+  onSelectVehicle?: (v: { id: string; make: string; model: string; image: string; rate: number }) => void;
 }
 
 export const VehicleListing: React.FC<VehicleListingProps> = ({
   onNavigateToDashboard,
   onNavigateToShield,
+  onSelectVehicle,
 }) => {
   const [filter, setFilter] = useState<'all' | 'dealer' | 'p2p'>('all');
 
@@ -130,7 +132,19 @@ export const VehicleListing: React.FC<VehicleListingProps> = ({
           {filteredVehicles.map((vehicle) => (
             <div 
               key={vehicle.id}
-              onClick={onNavigateToShield}
+              onClick={() => {
+                if (onSelectVehicle) {
+                  onSelectVehicle({
+                    id: vehicle.id,
+                    make: vehicle.make,
+                    model: vehicle.model,
+                    image: vehicle.photos,
+                    rate: vehicle.priceZar
+                  });
+                } else {
+                  onNavigateToShield();
+                }
+              }}
               className="bg-charcoal border border-charcoal-light/30 rounded-2xl overflow-hidden cursor-pointer hover:border-gold/30 transition-all duration-300 shadow-medium group"
             >
               {/* Image Container */}
