@@ -1,0 +1,9 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY packages/ packages/
+COPY services/partner-service/ services/partner-service/
+RUN npm install
+EXPOSE $(node -e "console.log(require('./services/partner-service/src/config').config.port || 4000)")
+CMD ["npx", "ts-node", "--watch", "services/partner-service/src/index.ts"]

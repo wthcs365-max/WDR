@@ -1,0 +1,134 @@
+# ============================================================================
+# WTH Drive Rentals — Local Development Override with Hot-Reload
+# ============================================================================
+# Usage: docker compose up -d
+# This file is auto-loaded alongside docker-compose.yml.
+# It mounts source code as volumes and runs services in dev mode (ts-node)
+# so changes to source files are reflected immediately.
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# Shared dev volume to avoid npm install overhead in each service
+# ---------------------------------------------------------------------------
+x-dev-volumes: &dev-volumes
+  - ./package.json:/app/package.json
+  - ./tsconfig.base.json:/app/tsconfig.base.json
+  - ./packages:/app/packages
+  - ./services/iam-service/src:/app/services/iam-service/src
+  - ./services/iam-service/tsconfig.json:/app/services/iam-service/tsconfig.json
+  - ./services/fleet-service/src:/app/services/fleet-service/src
+  - ./services/fleet-service/tsconfig.json:/app/services/fleet-service/tsconfig.json
+  - ./services/booking-service/src:/app/services/booking-service/src
+  - ./services/booking-service/tsconfig.json:/app/services/booking-service/tsconfig.json
+  - ./services/ledger-service/src:/app/services/ledger-service/src
+  - ./services/ledger-service/tsconfig.json:/app/services/ledger-service/tsconfig.json
+  - ./services/trust-service/src:/app/services/trust-service/src
+  - ./services/trust-service/tsconfig.json:/app/services/trust-service/tsconfig.json
+  - ./services/telemetry-service/src:/app/services/telemetry-service/src
+  - ./services/telemetry-service/tsconfig.json:/app/services/telemetry-service/tsconfig.json
+  - ./services/subscription-service/src:/app/services/subscription-service/src
+  - ./services/subscription-service/tsconfig.json:/app/services/subscription-service/tsconfig.json
+  - ./services/notification-service/src:/app/services/notification-service/src
+  - ./services/notification-service/tsconfig.json:/app/services/notification-service/tsconfig.json
+  - ./services/analytics-service/src:/app/services/analytics-service/src
+  - ./services/analytics-service/tsconfig.json:/app/services/analytics-service/tsconfig.json
+  - ./services/partner-service/src:/app/services/partner-service/src
+  - ./services/partner-service/tsconfig.json:/app/services/partner-service/tsconfig.json
+
+services:
+  # Override all microservices to use dev mode (ts-node with --watch via nodemon or tsx)
+  iam-service:
+    build:
+      dockerfile: services/iam-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  fleet-service:
+    build:
+      dockerfile: services/fleet-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  booking-service:
+    build:
+      dockerfile: services/booking-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  ledger-service:
+    build:
+      dockerfile: services/ledger-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  trust-service:
+    build:
+      dockerfile: services/trust-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  telemetry-service:
+    build:
+      dockerfile: services/telemetry-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  subscription-service:
+    build:
+      dockerfile: services/subscription-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  notification-service:
+    build:
+      dockerfile: services/notification-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  analytics-service:
+    build:
+      dockerfile: services/analytics-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  partner-service:
+    build:
+      dockerfile: services/partner-service/Dockerfile.dev
+    volumes: *dev-volumes
+    environment:
+      NODE_ENV: development
+
+  api-gateway:
+    build:
+      dockerfile: services/api-gateway/Dockerfile.dev
+    volumes:
+      - ./package.json:/app/package.json
+      - ./tsconfig.base.json:/app/tsconfig.base.json
+      - ./packages:/app/packages
+      - ./services/api-gateway/src:/app/services/api-gateway/src
+      - ./services/api-gateway/tsconfig.json:/app/services/api-gateway/tsconfig.json
+    environment:
+      NODE_ENV: development
+
+  mobile-app:
+    build:
+      dockerfile: services/mobile-app/Dockerfile.dev
+    volumes:
+      - ./package.json:/app/package.json
+      - ./tsconfig.base.json:/app/tsconfig.base.json
+      - ./packages:/app/packages
+      - ./services/mobile-app/src:/app/services/mobile-app/src
+      - ./services/mobile-app/vite.config.ts:/app/services/mobile-app/vite.config.ts
+      - ./services/mobile-app/tsconfig.json:/app/services/mobile-app/tsconfig.json
+      - ./services/mobile-app/index.html:/app/services/mobile-app/index.html
+    environment:
+      NODE_ENV: development

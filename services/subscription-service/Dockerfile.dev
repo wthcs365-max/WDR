@@ -1,0 +1,9 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY packages/ packages/
+COPY services/subscription-service/ services/subscription-service/
+RUN npm install
+EXPOSE $(node -e "console.log(require('./services/subscription-service/src/config').config.port || 4000)")
+CMD ["npx", "ts-node", "--watch", "services/subscription-service/src/index.ts"]

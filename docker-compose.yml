@@ -1,10 +1,11 @@
 # ============================================================================
-# WTH Drive Rentals — Local Development Stack
+# WTH Drive Rentals — Full-Stack Deployment
 # ============================================================================
 
-version: '3.8'
-
 services:
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
   postgres:
     image: postgres:15-alpine
     environment:
@@ -15,12 +16,25 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wdr -d wdr_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
+  # ---------------------------------------------------------------------------
+  # WDR Microservices (Ports 4001–4010)
+  # ---------------------------------------------------------------------------
   iam-service:
     build:
       context: .
@@ -31,9 +45,13 @@ services:
       PORT: 4001
       DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
       JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
   fleet-service:
     build:
@@ -45,10 +63,174 @@ services:
       PORT: 4002
       DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
       JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
+  booking-service:
+    build:
+      context: .
+      dockerfile: services/booking-service/Dockerfile
+    ports:
+      - "4003:4003"
+    environment:
+      PORT: 4003
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      fleet-service:
+        condition: service_started
+    restart: unless-stopped
+
+  ledger-service:
+    build:
+      context: .
+      dockerfile: services/ledger-service/Dockerfile
+    ports:
+      - "4004:4004"
+    environment:
+      PORT: 4004
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      booking-service:
+        condition: service_started
+    restart: unless-stopped
+
+  trust-service:
+    build:
+      context: .
+      dockerfile: services/trust-service/Dockerfile
+    ports:
+      - "4005:4005"
+    environment:
+      PORT: 4005
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  telemetry-service:
+    build:
+      context: .
+      dockerfile: services/telemetry-service/Dockerfile
+    ports:
+      - "4006:4006"
+    environment:
+      PORT: 4006
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  subscription-service:
+    build:
+      context: .
+      dockerfile: services/subscription-service/Dockerfile
+    ports:
+      - "4007:4007"
+    environment:
+      PORT: 4007
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ledger-service:
+        condition: service_started
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    ports:
+      - "4008:4008"
+    environment:
+      PORT: 4008
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+      DEFAULT_NOTIFICATION_PROVIDER: mock
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics-service/Dockerfile
+    ports:
+      - "4009:4009"
+    environment:
+      PORT: 4009
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  partner-service:
+    build:
+      context: .
+      dockerfile: services/partner-service/Dockerfile
+    ports:
+      - "4010:4010"
+    environment:
+      PORT: 4010
+      DATABASE_URL: postgresql://wdr:wdr_dev_password@postgres:5432/wdr_dev
+      JWT_SECRET: wdr-dev-secret-do-not-use-in-production
+      CORS_ORIGIN: "*"
+      TBYB_LEAD_EXPIRY_DAYS: 30
+      TBYB_HOT_LEAD_THRESHOLD: 70
+      TBYB_SUCCESS_FEE_ZAR: 1500
+      TBYB_CONVERSION_PCT: 0.02
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      fleet-service:
+        condition: service_started
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # API Gateway (Apollo Federation)
+  # ---------------------------------------------------------------------------
   api-gateway:
     build:
       context: .
@@ -68,7 +250,16 @@ services:
     depends_on:
       - iam-service
       - fleet-service
+      - booking-service
+      - ledger-service
+      - trust-service
+      - telemetry-service
+      - subscription-service
+    restart: unless-stopped
 
+  # ---------------------------------------------------------------------------
+  # Kong API Gateway (Edge Proxy)
+  # ---------------------------------------------------------------------------
   kong:
     image: kong:3.5
     volumes:
@@ -89,6 +280,20 @@ services:
       - "8444:8444"
     depends_on:
       - api-gateway
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Mobile App (Vite / React frontend — port 3000)
+  # ---------------------------------------------------------------------------
+  mobile-app:
+    build:
+      context: .
+      dockerfile: services/mobile-app/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - kong
+    restart: unless-stopped
 
 volumes:
   pgdata:
