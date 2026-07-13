@@ -40,13 +40,13 @@ function generateTokens(userId: string, role: string): AuthTokens {
   };
 
   const accessToken = jwt.sign(payload, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
+    expiresIn: config.jwtExpiresIn as any,
   });
 
   const refreshToken = jwt.sign(
     { sub: userId, type: 'refresh' },
     config.jwtSecret,
-    { expiresIn: config.jwtRefreshExpiresIn }
+    { expiresIn: config.jwtRefreshExpiresIn as any }
   );
 
   return {

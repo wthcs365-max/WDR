@@ -37,8 +37,8 @@ const refreshSchema = z.object({
  */
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const input = registerSchema.parse(req.body);
-    const result = await userService.register(input);
+    const parsed = registerSchema.parse(req.body);
+    const result = await userService.register(parsed as any);
 
     res.status(201).json({
       data: {
